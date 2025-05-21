@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cabinas Digitales de Evaluación Universitaria</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.2/dist/echarts.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --primary: #1e40af;
+            --secondary: #60a5fa;
+            --accent: #93c5fd;
+            --text: #1f2937;
+            --background: #ffffff;
+            --light-bg: #f3f4f6;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text);
+            background-color: var(--background);
+        }
+        
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background-color: var(--light-bg);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card {
+            border-radius: 0.375rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chart-container {
+            height: 400px;
+            margin-bottom: 2rem;
+        }
+        
+        .specs-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .specs-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .cabina-3d {
+            position: relative;
+            height: 500px;
+            margin: 2rem 0;
+        }
+        
+        .popup-info {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid var(--accent);
+            border-radius: 0.25rem;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            max-width: 300px;
+        }
+        
+        .hotspot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--primary);
+            z-index: 5;
+        }
+        
+        .hotspot:hover {
+            transform: scale(1.2);
+        }
+        
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <header class="header">
+            <h1 class="text-4xl font-bold mb-2">Cabinas Digitales de Evaluación Universitaria</h1>
+            <p class="text-xl opacity-90">Proyecto técnico para implementación en instituciones de educación superior</p>
+        </header>
+        
+        <section class="section" id="resumen">
+            <h2 class="section-title text-2xl font-bold">Resumen Ejecutivo</h2>
+            <p class="mb-4">
+                Este proyecto presenta el diseño técnico para la implementación de cabinas digitales de evaluación en entornos universitarios. 
+                Las cabinas proporcionan espacios individuales equipados con tecnología específica para realizar evaluaciones académicas 
+                en condiciones controladas, garantizando equidad, seguridad y accesibilidad para la comunidad universitaria.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="card bg-white p-6 text-center">
+                    <div class="text-5xl text-primary mb-4">
+                        <i class="fas fa-users" style="color: #1e40af;"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Mayor Equidad</h3>
+                    <p>Condiciones estandarizadas para todos los estudiantes sin importar su situación socioeconómica</p>
+                </div>
+                <div class="card bg-white p-6 text-center">
+                    <div class="text-5xl text-primary mb-4">
+                        <i class="fas fa-shield-alt" style="color: #1e40af;"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Seguridad Académica</h3>
+                    <p>Control de acceso y ambiente supervisado que garantiza la integridad de las evaluaciones</p>
+                </div>
+                <div class="card bg-white p-6 text-center">
+                    <div class="text-5xl text-primary mb-4">
+                        <i class="fas fa-clock" style="color: #1e40af;"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Flexibilidad Horaria</h3>
+                    <p>Disponibilidad extendida para realizar evaluaciones según las necesidades del estudiante</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section" id="objetivo">
+            <h2 class="section-title text-2xl font-bold">Objetivo del Proyecto</h2>
+            <p class="mb-4">
+                Desarrollar e implementar cabinas digitales de evaluación universitaria que proporcionen un entorno tecnológico 
+                autónomo, seguro y estandarizado para la realización de pruebas académicas.
+            </p>
+            <div class="bg-white p-6 rounded-lg mt-4">
+                <h3 class="text-xl font-bold mb-3">Objetivos específicos:</h3>
+                <ul class="specs-list">
+                    <li>Garantizar condiciones equitativas para todos los estudiantes durante procesos de evaluación</li>
+                    <li>Facilitar acceso a evaluaciones digitales en horarios flexibles</li>
+                    <li>Proporcionar ambiente controlado que minimice distracciones y posibilidades de fraude</li>
+                    <li>Integrar modalidades de enseñanza presencial y virtual mediante espacios físicos tecnológicamente equipados</li>
+                    <li>Optimizar recursos universitarios destinados a la evaluación académica</li>
+                </ul>
+            </div>
+        </section>
+        
+        <section class="section" id="componentes">
+            <h2 class="section-title text-2xl font-bold">Descripción de Componentes</h2>
+            
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-primary mb-4">Componentes Físicos</h3>
+                
+                <div class="bg-white p-6 rounded-lg mb-6">
+                    <h4 class="text-lg font-bold mb-2">Estructura de la Cabina</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-blue-100">
+                                    <th class="p-3">Componente</th>
+                                    <th class="p-3">Especificación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Dimensiones</td>
+                                    <td class="p-3">1,2 m (ancho) x 1,5 m (profundidad) x 2 m (altura)</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Materiales</td>
+                                    <td class="p-3">Paneles modulares con aislamiento acústico (reducción de ruido ≥ 35 dB)</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Puerta</td>
+                                    <td class="p-3">Sistema de cierre automático con indicador LED de ocupación</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Ventilación</td>
+                                    <td class="p-3">Sistema de ventilación forzada silenciosa (≤ 30 dB) con renovación de aire (15-20 m³/hora)</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Iluminación</td>
+                                    <td class="p-3">Sistema LED regulable (300-500 lux) con temperatura de color ajustable (3000K-5000K)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium">Mobiliario</td>
+                                    <td class="p-3">
+                                        <ul class="list-disc pl-5">
+                                            <li>Mesa empotrada ergonómica (profundidad: 60 cm, altura: 75 cm)</li>
+                                            <li>Asiento ajustable (altura regulable: 42-53 cm) con soporte lumbar</li>
+                                            <li>Reposapiés ergonómico</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg">
+                    <h4 class="text-lg font-bold mb-2">Equipamiento Tecnológico</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-blue-100">
+                                    <th class="p-3">Componente</th>
+                                    <th class="p-3">Especificación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Monitor digital</td>
+                                    <td class="p-3">Pantalla 24" Full HD (1920x1080) antirreflejo</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Computadora de escritorio</td>
+                                    <td class="p-3">
+                                        <ul class="list-disc pl-5">
+                                            <li>Procesador Intel Core i5 o equivalente</li>
+                                            <li>16 GB RAM</li>
+                                            <li>512 GB SSD</li>
+                                            <li>Conectividad WiFi/Ethernet</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">Periféricos</td>
+                                    <td class="p-3">
+                                        <ul class="list-disc pl-5">
+                                            <li>Ratón ergonómico inalámbrico</li>
+                                            <li>Teclado silencioso antiderrame</li>
+                                            <li>Auriculares sobre-oreja con cancelación de ruido</li>
+                                            <li>Tableta digital con lápiz óptico</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium">Material tradicional</td>
+                                    <td class="p-3">Compartimento con papel, lápices, bolígrafos, goma de borrar y sacapuntas</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3 class="text-xl font-bold text-primary mb-4">Componentes Digitales</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card bg-white p-6">
+                        <h4 class="text-lg font-bold mb-3">Sistema Operativo y Software Base</h4>
+                        <ul class="specs-list">
+                            <li>Sistema operativo securizado con arranque verificado</li>
+                            <li>Navegador web con modo quiosco para evaluaciones</li>
+                            <li>Software de bloqueo de funciones no autorizadas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card bg-white p-6">
+                        <h4 class="text-lg font-bold mb-3">Sistema de Gestión de Evaluaciones</h4>
+                        <ul class="specs-list">
+                            <li>Plataforma integrada con el LMS universitario</li>
+                            <li>Interfaz adaptada para diferentes tipos de evaluaciones</li>
+                            <li>Módulo de videovigilancia con IA para detección de comportamientos irregulares</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card bg-white p-6">
+                        <h4 class="text-lg font-bold mb-3">Sistema de Seguridad Digital</h4>
+                        <ul class="specs-list">
+                            <li>Firewall dedicado para prevenir accesos no autorizados</li>
+                            <li>Sistema anti-trampas con bloqueo de navegación paralela</li>
+                            <li>Monitorización en tiempo real de la actividad digital</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section" id="plano">
+            <h2 class="section-title text-2xl font-bold">Plano y Especificaciones Técnicas</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Dimensiones y Distribución</h3>
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <!-- Vista superior de la cabina (SVG) -->
+                        <div class="mb-2 text-center">Vista Superior</div>
+                        <svg width="100%" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Marco exterior -->
+                            <rect x="50" y="20" width="300" height="250" fill="#f0f0f0" stroke="#333" stroke-width="2" />
+                            
+                            <!-- Mesa de trabajo -->
+                            <rect x="50" y="20" width="300" height="120" fill="#d4d4d8" stroke="#333" stroke-width="1" />
+                            
+                            <!-- Equipo electrónico -->
+                            <rect x="150" y="40" width="100" height="60" fill="#93c5fd" stroke="#1e40af" stroke-width="1" />
+                            <text x="200" y="75" text-anchor="middle" font-size="12">Monitor</text>
+                            
+                            <!-- Teclado y mouse -->
+                            <rect x="150" y="110" width="100" height="20" fill="#93c5fd" stroke="#1e40af" stroke-width="1" />
+                            <circle cx="270" cy="120" r="10" fill="#93c5fd" stroke="#1e40af" stroke-width="1" />
+                            
+                            <!-- Silla -->
+                            <rect x="170" y="180" width="60" height="60" rx="30" ry="30" fill="#a78bfa" stroke="#5b21b6" stroke-width="1" />
+                            <text x="200" y="210" text-anchor="middle" font-size="12">Asiento</text>
+                            
+                            <!-- Medidas -->
+                            <text x="200" y="15" text-anchor="middle" font-size="12" font-weight="bold">1.2 metros</text>
+                            <line x1="50" y1="10" x2="350" y2="10" stroke="#333" stroke-width="1" />
+                            <line x1="50" y1="5" x2="50" y2="15" stroke="#333" stroke-width="1" />
+                            <line x1="350" y1="5" x2="350" y2="15" stroke="#333" stroke-width="1" />
+                            
+                            <text x="40" y="145" text-anchor="middle" font-size="12" font-weight="bold" transform="rotate(-90,40,145)">1.5 metros</text>
+                            <line x1="30" y1="20" x2="30" y2="270" stroke="#333" stroke-width="1" />
+                            <line x1="25" y1="20" x2="35" y2="20" stroke="#333" stroke-width="1" />
+                            <line x1="25" y1="270" x2="35" y2="270" stroke="#333" stroke-width="1" />
+                            
+                            <!-- Puerta -->
+                            <line x1="350" y1="170" x2="350" y2="270" stroke="#333" stroke-width="3" />
+                            <path d="M 350 170 Q 380 220 350 270" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="5,5" />
+                            <text x="360" y="220" text-anchor="middle" font-size="12">Puerta</text>
+                        </svg>
+                        
+                        <!-- Vista lateral de la cabina (SVG) -->
+                        <div class="mt-8 mb-2 text-center">Vista Lateral</div>
+                        <svg width="100%" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Marco exterior -->
+                            <rect x="50" y="20" width="300" height="250" fill="#f0f0f0" stroke="#333" stroke-width="2" />
+                            
+                            <!-- Mesa de trabajo -->
+                            <rect x="50" y="120" width="300" height="15" fill="#d4d4d8" stroke="#333" stroke-width="1" />
+                            
+                            <!-- Monitor -->
+                            <rect x="200" y="60" width="10" height="60" fill="#93c5fd" stroke="#1e40af" stroke-width="1" />
+                            <rect x="180" y="50" width="50" height="40" fill="#93c5fd" stroke="#1e40af" stroke-width="1" />
+                            
+                            <!-- Silla -->
+                            <rect x="175" y="140" width="50" height="10" fill="#a78bfa" stroke="#5b21b6" stroke-width="1" />
+                            <rect x="190" y="150" width="20" height="60" fill="#a78bfa" stroke="#5b21b6" stroke-width="1" />
+                            
+                            <!-- Medidas -->
+                            <text x="200" y="15" text-anchor="middle" font-size="12" font-weight="bold">1.5 metros</text>
+                            <line x1="50" y1="10" x2="350" y2="10" stroke="#333" stroke-width="1" />
+                            <line x1="50" y1="5" x2="50" y2="15" stroke="#333" stroke-width="1" />
+                            <line x1="350" y1="5" x2="350" y2="15" stroke="#333" stroke-width="1" />
+                            
+                            <text x="40" y="145" text-anchor="middle" font-size="12" font-weight="bold" transform="rotate(-90,40,145)">2 metros</text>
+                            <line x1="30" y1="20" x2="30" y2="270" stroke="#333" stroke-width="1" />
+                            <line x1="25" y1="20" x2="35" y2="20" stroke="#333" stroke-width="1" />
+                            <line x1="25" y1="270" x2="35" y2="270" stroke="#333" stroke-width="1" />
+                            
+                            <!-- Iluminación -->
+                            <path d="M 200 20 L 190 40 L 210 40 Z" fill="#fcd34d" stroke="#333" stroke-width="1" />
+                            <text x="200" y="35" text-anchor="middle" font-size="10">LED</text>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Especificaciones Técnicas</h3>
+                    <div class="bg-white p-6 rounded-lg shadow mb-6">
+                        <h4 class="font-bold mb-2">Distribución Espacial</h4>
+                        <ul class="specs-list mb-4">
+                            <li>Zona de trabajo: Mesa empotrada (120 cm x 60 cm) con superficie antideslizante</li>
+                            <li>Zona de equipamiento: Monitor, ordenador, periféricos y material tradicional</li>
+                            <li>Zona de acceso: Puerta de entrada (80 cm ancho) con sistema de control</li>
+                            <li>Zona técnica: Panel de conexiones y control (parte posterior)</li>
+                        </ul>
+                        
+                        <h4 class="font-bold mb-2">Instalaciones Técnicas</h4>
+                        <ul class="specs-list">
+                            <li>Alimentación eléctrica: 4 tomas con protección contra sobretensiones</li>
+                            <li>Red: Punto de acceso Ethernet categoría 6 y cobertura Wi-Fi</li>
+                            <li>Iluminación: Panel LED cenital con regulador</li>
+                            <li>Climatización: Rejillas de ventilación superior e inferior</li>
+                        </ul>
+                    </div>
+                    
+                    <div id="chart-dimensiones" class="chart-container bg-white p-4 rounded-lg shadow"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section" id="funcionalidades">
+            <h2 class="section-title text-2xl font-bold">Funcionalidades de Acceso y Seguridad</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div class="card bg-white p-6">
+                    <div class="flex justify-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="15" y="30" width="50" height="35" rx="2" ry="2" fill="#60a5fa" stroke="#1e40af" stroke-width="2" />
+                            <rect x="25" y="40" width="30" height="15" fill="#fff" stroke="#1e40af" stroke-width="1" />
+                            <circle cx="40" cy="55" r="2" fill="#1e40af" />
+                            <path d="M 30 20 L 50 20 L 45 30 L 35 30 Z" fill="#60a5fa" stroke="#1e40af" stroke-width="2" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Sistema de Control de Acceso</h3>
+                    <ul class="specs-list">
+                        <li>Autenticación primaria: Lector de tarjetas universitarias RFID/NFC</li>
+                        <li>Autenticación secundaria: Sistema biométrico</li>
+                        <li>Reserva previa: Sistema de reserva online integrado</li>
+                        <li>Indicadores de estado: Panel LED externo con información de disponibilidad</li>
+                    </ul>
+                </div>
+                
+                <div class="card bg-white p-6">
+                    <div class="flex justify-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="40" cy="40" r="30" fill="none" stroke="#1e40af" stroke-width="2" />
+                            <path d="M 40 20 L 40 40 L 55 50" fill="none" stroke="#1e40af" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="40" cy="40" r="3" fill="#1e40af" />
+                            <path d="M 30 15 L 50 15 L 50 25 L 30 25 Z" fill="#60a5fa" stroke="#1e40af" stroke-width="1" />
+                            <rect x="38" y="25" width="4" height="5" fill="#60a5fa" stroke="#1e40af" stroke-width="1" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Seguridad Física</h3>
+                    <ul class="specs-list">
+                        <li>Monitorización: Cámaras de seguridad en áreas comunes</li>
+                        <li>Alarmas: Sistema de detección de intrusión</li>
+                        <li>Control ambiental: Sensores de temperatura y calidad del aire</li>
+                        <li>Emergencias: Botón de pánico y sistema de comunicación directa</li>
+                    </ul>
+                </div>
+                
+                <div class="card bg-white p-6">
+                    <div class="flex justify-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="20" y="20" width="40" height="40" rx="5" ry="5" fill="#60a5fa" stroke="#1e40af" stroke-width="2" />
+                            <rect x="30" y="30" width="20" height="10" fill="#fff" stroke="#1e40af" stroke-width="1" />
+                            <path d="M 35 50 L 45 50" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="30" cy="55" r="2" fill="#fff" />
+                            <circle cx="35" cy="55" r="2" fill="#fff" />
+                            <circle cx="40" cy="55" r="2" fill="#fff" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Seguridad Digital</h3>
+                    <ul class="specs-list">
+                        <li>Protección de datos: Cifrado de extremo a extremo</li>
+                        <li>Aislamiento de red: VLAN dedicada para las cabinas</li>
+                        <li>Detección de intrusiones: Sistema IPS/IDS</li>
+                        <li>Borrado automático: Limpieza de datos al finalizar cada sesión</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">Estadísticas de Seguridad y Eficiencia</h3>
+                <div id="chart-seguridad" class="chart-container"></div>
+            </div>
+        </section>
+        
+        <section class="section" id="aplicaciones">
+            <h2 class="section-title text-2xl font-bold">Aplicaciones Educativas</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4 text-primary border-b border-accent pb-2">Modalidad Presencial</h3>
+                    <div class="mb-4">
+                        <h4 class="font-bold">Evaluaciones supervisadas</h4>
+                        <p class="text-gray-600">Exámenes programados con vigilancia remota que garantizan condiciones equitativas.</p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold">Pruebas diagnósticas</h4>
+                        <p class="text-gray-600">Evaluaciones previas a cursos o unidades didácticas para identificar nivel de conocimientos.</p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold">Simulacros profesionales</h4>
+                        <p class="text-gray-600">Tests para certificaciones o competencias específicas en entorno controlado.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold">Presentaciones orales</h4>
+                        <p class="text-gray-600">Grabación de exposiciones con análisis posterior para evaluación de competencias comunicativas.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4 text-primary border-b border-accent pb-2">Modalidad Virtual</h3>
+                    <div class="mb-4">
+                        <h4 class="font-bold">Exámenes asíncronos</h4>
+                        <p class="text-gray-600">Evaluaciones en horarios flexibles sin presencia docente física.</p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold">Proctoring automatizado</h4>
+                        <p class="text-gray-600">Supervisión mediante IA de comportamientos sospechosos durante la evaluación.</p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold">Evaluación continua</h4>
+                        <p class="text-gray-600">Tests periódicos programados en plataformas virtuales con seguimiento automático.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold">Tutorías personalizadas</h4>
+                        <p class="text-gray-600">Sesiones de evaluación formativa con retroalimentación docente en tiempo real o diferido.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">Integración con Ecosistema Educativo</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-primary font-bold">01</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Sincronización LMS</h4>
+                            <p class="text-gray-600">Integración directa con Moodle, Canvas, Blackboard u otras plataformas.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-primary font-bold">02</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Analítica de aprendizaje</h4>
+                            <p class="text-gray-600">Recopilación de datos para análisis de rendimiento académico y mejora continua.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-primary font-bold">03</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Accesibilidad universal</h4>
+                            <p class="text-gray-600">Adaptación para estudiantes con necesidades educativas especiales.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-primary font-bold">04</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Repositorio académico</h4>
+                            <p class="text-gray-600">Acceso a recursos digitales durante evaluaciones autorizadas.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="chart-aplicaciones" class="chart-container mt-6"></div>
+            </div>
+        </section>
+        
+        <section class="section" id="justificacion">
+            <h2 class="section-title text-2xl font-bold">Justificación Técnica y Pedagógica</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Justificación Técnica</h3>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-bold">Estandarización</h4>
+                        <p class="text-gray-600 mb-3">Garantiza condiciones técnicas idénticas para todos los estudiantes durante los procesos de evaluación, eliminando variables tecnológicas que pudieran afectar el rendimiento.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-bold">Escalabilidad</h4>
+                        <p class="text-gray-600 mb-3">Diseño modular adaptable a diferentes espacios universitarios, permitiendo una implementación progresiva según las necesidades y recursos disponibles.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-bold">Sostenibilidad</h4>
+                        <p class="text-gray-600 mb-3">Equipamiento energéticamente eficiente (certificación Energy Star) con un consumo optimizado y componentes de larga duración.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold">Mantenimiento</h4>
+                        <p class="text-gray-600 mb-3">Componentes de fácil reemplazo y actualización, reduciendo los costos operativos a largo plazo y maximizando la vida útil del sistema.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Justificación Pedagógica</h3>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-bold">Equidad evaluativa</h4>
+                        <p class="text-gray-600 mb-3">Elimina desigualdades relacionadas con recursos tecnológicos personales, ofreciendo a todos los estudiantes las mismas oportunidades.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 95%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-bold">Integridad académica</h4>
+                        <p class="text-gray-600 mb-3">Reduce significativamente las posibilidades de plagio o fraude, garantizando la validez de los resultados de evaluación.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 90%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-bold">Competencias digitales</h4>
+                        <p class="text-gray-600 mb-3">Familiariza a los estudiantes con entornos tecnológicos profesionales similares a los que encontrarán en su vida laboral.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold">Evaluación auténtica</h4>
+                        <p class="text-gray-600 mb-3">Permite diseñar pruebas que simulen entornos laborales reales, mejorando la validez y relevancia de las evaluaciones.</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">Análisis Comparativo de Beneficios</h3>
+                <div id="chart-beneficios" class="chart-container"></div>
+            </div>
+        </section>
+        
+        <section class="section" id="relevancia">
+            <h2 class="section-title text-2xl font-bold">Relevancia para Estudiantes Universitarios</h2>
+            
+            <div class="bg-white p-6 rounded-lg shadow mb-8">
+                <h3 class="text-xl font-bold mb-4">Beneficios para el Estudiante</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div class="text-4xl text-primary mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#1e40af" viewBox="0 0 16 16">
+                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Flexibilidad horaria</h4>
+                        <p class="text-gray-600">Disponibilidad extendida para realizar evaluaciones en horarios adaptados a las necesidades individuales.</p>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div class="text-4xl text-primary mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#1e40af" viewBox="0 0 16 16">
+                                <path d="M8.5 5.034v1.1l.953-.55.5.867L9 7l.953.55-.5.866-.953-.55v1.1h-1v-1.1l-.953.55-.5-.866L7 7l-.953-.55.5-.866.953.55v-1.1h1ZM13.25 9a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5ZM13 11.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5Zm.25 1.75a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5Zm-11-4a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 3 9.75v-.5A.25.25 0 0 0 2.75 9h-.5Zm0 2a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5ZM2 13.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5Z"/>
+                                <path d="M5 1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1 1 1v4h3a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h3V3a1 1 0 0 1 1-1V1Zm2 14h2v-3H7v3Zm3 0h1V3H5v12h1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3Zm0-14H6v1h4V1Zm2 7v7h3V8h-3Zm-8 7V8H1v7h3Z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Reducción de estrés</h4>
+                        <p class="text-gray-600">Ambiente controlado que minimiza distracciones e interrupciones durante la evaluación.</p>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div class="text-4xl text-primary mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#1e40af" viewBox="0 0 16 16">
+                                <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5v10.795a4.2 4.2 0 0 0-.776-.492C11.392 12.387 10.063 12 8 12s-3.392.387-4.224.803a4.2 4.2 0 0 0-.776.492V2.5z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Accesibilidad</h4>
+                        <p class="text-gray-600">Adaptaciones para diferentes necesidades y capacidades, garantizando igualdad de oportunidades.</p>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div class="text-4xl text-primary mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#1e40af" viewBox="0 0 16 16">
+                                <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Retroalimentación inmediata</h4>
+                        <p class="text-gray-600">Posibilidad de obtener resultados instantáneos que facilitan el proceso de aprendizaje.</p>
+                    </div>
+                    
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div class="text-4xl text-primary mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#1e40af" viewBox="0 0 16 16">
+                                <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5zm2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg">Preparación profesional</h4>
+                        <p class="text-gray-600">Experiencia en entornos tecnológicos similares a los laborales, facilitando la transición al mundo profesional.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4">Impacto en el Rendimiento Académico</h3>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Mayor concentración</h4>
+                        <p class="text-gray-600">El aislamiento acústico y visual favorece el enfoque en la tarea, reduciendo distracciones externas.</p>
+                        <div class="mt-2 flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full mr-2">
+                                <div class="bg-blue-600 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full" style="width: 85%">85%</div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-500">Efectividad</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Objetividad</h4>
+                        <p class="text-gray-600">Evaluación automatizada que reduce sesgos en la calificación, garantizando resultados más justos.</p>
+                        <div class="mt-2 flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full mr-2">
+                                <div class="bg-blue-600 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full" style="width: 90%">90%</div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-500">Efectividad</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-2">Trazabilidad</h4>
+                        <p class="text-gray-600">Registro detallado del proceso de evaluación para revisiones posteriores y análisis de resultados.</p>
+                        <div class="mt-2 flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full mr-2">
+                                <div class="bg-blue-600 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full" style="width: 95%">95%</div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-500">Efectividad</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold mb-2">Autoevaluación</h4>
+                        <p class="text-gray-600">Facilita procesos de reflexión sobre el propio aprendizaje, mejorando las estrategias de estudio.</p>
+                        <div class="mt-2 flex items-center">
+                            <div class="w-full bg-gray-200 rounded-full mr-2">
+                                <div class="bg-blue-600 text-xs font-medium text-white text-center p-0.5 leading-none rounded-full" style="width: 80%">80%</div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-500">Efectividad</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="chart-impacto" class="chart-container bg-white p-6 rounded-lg shadow"></div>
+            </div>
+        </section>
+        
+        <section class="section" id="recomendaciones">
+            <h2 class="section-title text-2xl font-bold">Recomendaciones de Instalación y Mantenimiento</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4 text-primary border-b border-accent pb-2">Instalación</h3>
+                    <ul class="specs-list">
+                        <li><span class="font-medium">Ubicación recomendada:</span> Áreas de biblioteca, salas de estudio o espacios específicos</li>
+                        <li><span class="font-medium">Requisitos eléctricos:</span> Circuito dedicado con protección diferencial</li>
+                        <li><span class="font-medium">Conectividad:</span> Acceso a red universitaria con ancho de banda garantizado</li>
+                        <li><span class="font-medium">Accesibilidad:</span> Cumplimiento de normativas para personas con movilidad reducida</li>
+                        <li><span class="font-medium">Señalización:</span> Indicadores claros de ubicación, disponibilidad y normas de uso</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4 text-primary border-b border-accent pb-2">Mantenimiento Preventivo</h3>
+                    <ul class="specs-list">
+                        <li><span class="font-medium">Limpieza:</span> Protocolo diario de desinfección de superficies y equipos</li>
+                        <li><span class="font-medium">Revisión técnica:</span> Comprobación semanal de funcionamiento de hardware</li>
+                        <li><span class="font-medium">Actualización software:</span> Programación mensual de parches y mejoras</li>
+                        <li><span class="font-medium">Calibración:</span> Ajuste trimestral de sistemas biométricos y periféricos</li>
+                        <li><span class="font-medium">Inspección estructural:</span> Revisión semestral de paneles, puertas y ventilación</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold mb-4 text-primary border-b border-accent pb-2">Soporte Técnico</h3>
+                    <ul class="specs-list">
+                        <li><span class="font-medium">Asistencia remota:</span> Sistema de ayuda virtual disponible durante el uso</li>
+                        <li><span class="font-medium">Mantenimiento correctivo:</span> Protocolo de respuesta rápida ante incidencias</li>
+                        <li><span class="font-medium">Monitorización centralizada:</span> Panel de control para supervisión técnica en tiempo real</li>
+                        <li><span class="font-medium">Documentación:</span> Manual técnico actualizado y guías de resolución de problemas</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">Ciclo de Mantenimiento Recomendado</h3>
+                <div id="chart-mantenimiento" class="chart-container"></div>
+            </div>
+        </section>
+        
+        <section class="section" id="conclusiones">
+            <h2 class="section-title text-2xl font-bold">Conclusiones</h2>
+            
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <p class="mb-4 text-lg">
+                    Las cabinas digitales de evaluación universitaria representan una solución innovadora que responde a las necesidades 
+                    actuales de la educación superior, donde convergen modalidades presenciales y virtuales. Su implementación contribuye 
+                    significativamente a la modernización de los procesos evaluativos, garantizando condiciones equitativas, seguras y controladas.
+                </p>
+                
+                <p class="mb-4 text-lg">
+                    Este proyecto no solo mejora la infraestructura tecnológica de la universidad, sino que también impulsa un modelo 
+                    educativo alineado con las demandas profesionales actuales, donde la tecnología y la autonomía son elementos fundamentales. 
+                    Las cabinas digitales constituyen, por tanto, una inversión estratégica para instituciones educativas comprometidas 
+                    con la calidad y la innovación pedagógica.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Valor Añadido</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Estandarización del proceso evaluativo en la institución</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Mejora significativa en la integridad académica</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Optimización de recursos humanos en la supervisión de evaluaciones</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Posicionamiento de la universidad como referente en innovación educativa</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold mb-4 text-primary">Próximos Pasos</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 flex items-center justify-center w-7 h-7 bg-blue-100 rounded-full text-primary font-bold mr-2">1</span>
+                            <span>Realizar estudio de viabilidad específico para las instalaciones del campus</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 flex items-center justify-center w-7 h-7 bg-blue-100 rounded-full text-primary font-bold mr-2">2</span>
+                            <span>Desarrollar proyecto piloto con un número reducido de cabinas (5-10 unidades)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 flex items-center justify-center w-7 h-7 bg-blue-100 rounded-full text-primary font-bold mr-2">3</span>
+                            <span>Evaluar resultados y retroalimentación de usuarios durante un semestre académico</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 flex items-center justify-center w-7 h-7 bg-blue-100 rounded-full text-primary font-bold mr-2">4</span>
+                            <span>Implementar mejoras y escalar el proyecto según necesidades identificadas</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gráfico de dimensiones de la cabina
+            const chartDimensiones = echarts.init(document.getElementById('chart-dimensiones'));
+            const optionDimensiones = {
+                title: {
+                    text: 'Dimensiones de la Cabina',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['Medidas (metros)'],
+                    bottom: 10
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Ancho', 'Profundidad', 'Altura']
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Metros'
+                },
+                series: [
+                    {
+                        name: 'Medidas (metros)',
+                        type: 'bar',
+                        data: [1.2, 1.5, 2.0],
+                        itemStyle: {
+                            color: '#60a5fa'
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            formatter: '{c} m'
+                        }
+                    }
+                ]
+            };
+            chartDimensiones.setOption(optionDimensiones);
+            
+            // Gráfico de seguridad
+            const chartSeguridad = echarts.init(document.getElementById('chart-seguridad'));
+            const optionSeguridad = {
+                title: {
+                    text: 'Niveles de Seguridad por Tipo',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    bottom: 'bottom'
+                },
+                series: [
+                    {
+                        name: 'Nivel de Protección',
+                        type: 'pie',
+                        radius: '60%',
+                        center: ['50%', '50%'],
+                        data: [
+                            { value: 40, name: 'Seguridad Física' },
+                            { value: 35, name: 'Seguridad Digital' },
+                            { value: 25, name: 'Control de Acceso' }
+                        ],
+                        itemStyle: {
+                            color: function(params) {
+                                const colorList = ['#60a5fa', '#a78bfa', '#fbbf24'];
+                                return colorList[params.dataIndex];
+                            }
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        label: {
+                            formatter: '{b}: {d}%'
+                        }
+                    }
+                ]
+            };
+            chartSeguridad.setOption(optionSeguridad);
+            
+            // Gráfico de aplicaciones
+            const chartAplicaciones = echarts.init(document.getElementById('chart-aplicaciones'));
+            const optionAplicaciones = {
+                title: {
+                    text: 'Distribución de Uso por Tipo de Aplicación',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['Uso Actual', 'Potencial Futuro'],
+                    bottom: 10
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    boundaryGap: [0, 0.01]
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['Exámenes Finales', 'Evaluación Continua', 'Simulacros Profesionales', 'Tutorías', 'Certificaciones']
+                },
+                series: [
+                    {
+                        name: 'Uso Actual',
+                        type: 'bar',
+                        data: [45, 25, 15, 10, 5],
+                        itemStyle: {
+                            color: '#60a5fa'
+                        }
+                    },
+                    {
+                        name: 'Potencial Futuro',
+                        type: 'bar',
+                        data: [35, 30, 20, 10, 5],
+                        itemStyle: {
+                            color: '#93c5fd'
+                        }
+                    }
+                ]
+            };
+            chartAplicaciones.setOption(optionAplicaciones);
+            
+            // Gráfico de beneficios
+            const chartBeneficios = echarts.init(document.getElementById('chart-beneficios'));
+            const optionBeneficios = {
+                title: {
+                    text: 'Comparativa de Beneficios',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                radar: {
+                    indicator: [
+                        { name: 'Equidad', max: 100 },
+                        { name: 'Seguridad', max: 100 },
+                        { name: 'Flexibilidad', max: 100 },
+                        { name: 'Adaptabilidad', max: 100 },
+                        { name: 'Sostenibilidad', max: 100 },
+                        { name: 'Costo-Eficiencia', max: 100 }
+                    ],
+                    radius: 130
+                },
+                series: [
+                    {
+                        type: 'radar',
+                        data: [
+                            {
+                                value: [95, 90, 80, 70, 75, 65],
+                                name: 'Cabinas Digitales',
+                                areaStyle: {
+                                    color: 'rgba(96, 165, 250, 0.6)'
+                                },
+                                lineStyle: {
+                                    color: '#1e40af'
+                                }
+                            },
+                            {
+                                value: [60, 50, 70, 60, 60, 80],
+                                name: 'Sistemas Tradicionales',
+                                areaStyle: {
+                                    color: 'rgba(167, 139, 250, 0.6)'
+                                },
+                                lineStyle: {
+                                    color: '#5b21b6'
+                                }
+                            }
+                        ]
+                    }
+                ]
+            };
+            chartBeneficios.setOption(optionBeneficios);
+            
+            // Gráfico de impacto
+            const chartImpacto = echarts.init(document.getElementById('chart-impacto'));
+            const optionImpacto = {
+                title: {
+                    text: 'Impacto Proyectado en el Rendimiento Académico',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Con Cabinas Digitales', 'Sistema Tradicional'],
+                    bottom: 10
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['1er Semestre', '2do Semestre', '3er Semestre', '4to Semestre'],
+                    axisLabel: {
+                        interval: 0
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Índice de Rendimiento',
+                    min: 60
+                },
+                series: [
+                    {
+                        name: 'Con Cabinas Digitales',
+                        type: 'line',
+                        data: [70, 75, 82, 88],
+                        smooth: true,
+                        lineStyle: {
+                            width: 3,
+                            color: '#1e40af'
+                        },
+                        symbol: 'circle',
+                        symbolSize: 8,
+                        itemStyle: {
+                            color: '#60a5fa'
+                        }
+                    },
+                    {
+                        name: 'Sistema Tradicional',
+                        type: 'line',
+                        data: [70, 72, 74, 75],
+                        smooth: true,
+                        lineStyle: {
+                            width: 3,
+                            color: '#6b7280'
+                        },
+                        symbol: 'circle',
+                        symbolSize: 8,
+                        itemStyle: {
+                            color: '#9ca3af'
+                        }
+                    }
+                ]
+            };
+            chartImpacto.setOption(optionImpacto);
+            
+            // Gráfico de mantenimiento
+            const chartMantenimiento = echarts.init(document.getElementById('chart-mantenimiento'));
+            const optionMantenimiento = {
+                title: {
+                    text: 'Ciclo de Mantenimiento',
+                    left: 'center'
+                },
+                color: ['#60a5fa', '#a78bfa', '#fbbf24', '#10b981'],
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    bottom: 10,
+                    left: 'center',
+                    data: ['Diario', 'Semanal', 'Mensual', 'Trimestral', 'Semestral']
+                },
+                series: [
+                    {
+                        name: 'Frecuencia',
+                        type: 'pie',
+                        radius: ['30%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '20',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            { value: 30, name: 'Diario' },
+                            { value: 25, name: 'Semanal' },
+                            { value: 20, name: 'Mensual' },
+                            { value: 15, name: 'Trimestral' },
+                            { value: 10, name: 'Semestral' }
+                        ]
+                    }
+                ]
+            };
+            chartMantenimiento.setOption(optionMantenimiento);
+            
+            // Función para redimensionar los gráficos cuando cambia el tamaño de la ventana
+            window.addEventListener('resize', function() {
+                chartDimensiones.resize();
+                chartSeguridad.resize();
+                chartAplicaciones.resize();
+                chartBeneficios.resize();
+                chartImpacto.resize();
+                chartMantenimiento.resize();
+            });
+        });
+    </script>
+</body>
+</html>
